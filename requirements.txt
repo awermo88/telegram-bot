@@ -1,3 +1,4 @@
 matplotlib
 pyproj
 python-telegram-bot
+requests

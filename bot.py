@@ -531,5 +531,29 @@ def main():
     logger.info("ربات شروع شد.")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
+import requests
+import time
+import threading
+
+def keep_alive():
+    while True:
+        try:
+            requests.get("https://telegram-bot-yddl.onrender.com")  # URL سرویس Render
+            print("Ping sent to keep alive")
+        except Exception as e:
+            print(f"Error in ping: {e}")
+        time.sleep(300)  # پینگ هر 5 دقیقه (300 ثانیه)
+
+
+
+
 if __name__ == "__main__":
-    main()
+    # (بقیه کدهات که از قبل داری، مثل تعریف Application و CommandHandlerها)
+
+    # اجرای ربات و پینگ تو دو Thread جدا
+    threading.Thread(target=app.run_polling, daemon=True).start()
+    threading.Thread(target=keep_alive, daemon=True).start()
+
+    # نگه داشتن برنامه فعال
+    while True:
+        time.sleep(1)
