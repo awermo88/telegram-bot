@@ -8,12 +8,13 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 import requests
 import time
 import threading
+import asyncio
 
 # تنظیمات لاگ
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# توکن ربات (بهتره از متغیر محیطی استفاده کنی، ولی اینجا ثابت نگه داشتم)
+# توکن ربات
 TOKEN = "7565947478:AAGdwaH8on-OnhC9rEhZuFi3S_GUkm3MbMw"
 
 # --- ایجاد منوها ---
@@ -523,7 +524,6 @@ def plot_land_area(points, output_file="land_area.png"):
 
 # --- اجرای ربات ---
 def main():
-    # گرفتن توکن از متغیر محیطی (ترجیحاً) یا ثابت
     TOKEN = os.getenv("TOKEN", "7565947478:AAGdwaH8on-OnhC9rEhZuFi3S_GUkm3MbMw")
     app = Application.builder().token(TOKEN).build()
 
@@ -546,10 +546,19 @@ def keep_alive():
             print(f"Error in ping: {e}")
         time.sleep(300)  # پینگ هر 5 دقیقه
 
+# تابع برای اجرای Polling با Event Loop
+async def run_bot(app):
+    await app.run_polling(allowed_updates=Update.ALL_TYPES)
+
 if __name__ == "__main__":
-    # اجرای ربات و پینگ تو دو Thread جدا
-    app = main()  # تعریف app اینجا
-    threading.Thread(target=app.run_polling, daemon=True).start()
+    # ایجاد و اجرای ربات تو Event Loop
+    app = main()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    polling_thread = threading.Thread(target=lambda: loop.run_until_complete(run_bot(app)), daemon=True)
+    polling_thread.start()
+
+    # اجرای Thread برای پینگ
     threading.Thread(target=keep_alive, daemon=True).start()
 
     # نگه داشتن برنامه فعال
