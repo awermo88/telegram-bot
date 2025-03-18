@@ -4,13 +4,16 @@ import math
 import matplotlib.pyplot as plt
 from pyproj import Proj, Transformer, Geod
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+import requests
+import time
+import threading
 
 # تنظیمات لاگ
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
+# توکن ربات (بهتره از متغیر محیطی استفاده کنی، ولی اینجا ثابت نگه داشتم)
 TOKEN = "7565947478:AAGdwaH8on-OnhC9rEhZuFi3S_GUkm3MbMw"
 
 # --- ایجاد منوها ---
@@ -520,6 +523,8 @@ def plot_land_area(points, output_file="land_area.png"):
 
 # --- اجرای ربات ---
 def main():
+    # گرفتن توکن از متغیر محیطی (ترجیحاً) یا ثابت
+    TOKEN = os.getenv("TOKEN", "7565947478:AAGdwaH8on-OnhC9rEhZuFi3S_GUkm3MbMw")
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -529,12 +534,9 @@ def main():
     app.add_error_handler(error_handler)
 
     logger.info("ربات شروع شد.")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    return app
 
-import requests
-import time
-import threading
-
+# تابع پینگ برای نگه داشتن ربات فعال
 def keep_alive():
     while True:
         try:
@@ -542,15 +544,11 @@ def keep_alive():
             print("Ping sent to keep alive")
         except Exception as e:
             print(f"Error in ping: {e}")
-        time.sleep(300)  # پینگ هر 5 دقیقه (300 ثانیه)
-
-
-
+        time.sleep(300)  # پینگ هر 5 دقیقه
 
 if __name__ == "__main__":
-    # (بقیه کدهات که از قبل داری، مثل تعریف Application و CommandHandlerها)
-
     # اجرای ربات و پینگ تو دو Thread جدا
+    app = main()  # تعریف app اینجا
     threading.Thread(target=app.run_polling, daemon=True).start()
     threading.Thread(target=keep_alive, daemon=True).start()
 
