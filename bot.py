@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 from pyproj import Proj, Transformer, Geod
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes, CallbackContext
 import requests
 import time
 import threading
