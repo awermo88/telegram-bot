@@ -1,0 +1,3 @@
+matplotlib
+pyproj
+python-telegram-bot
