@@ -546,21 +546,19 @@ def keep_alive():
             print(f"Error in ping: {e}")
         time.sleep(300)  # پینگ هر 5 دقیقه
 
-# تابع برای اجرای Polling با Event Loop
+# تابع برای اجرای Polling
 async def run_bot(app):
-    await app.run_polling(allowed_updates=Update.ALL_TYPES)
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+    return app
 
 if __name__ == "__main__":
-    # ایجاد و اجرای ربات تو Event Loop
+    # ایجاد و اجرای ربات تو Main Thread
     app = main()
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    polling_thread = threading.Thread(target=lambda: loop.run_until_complete(run_bot(app)), daemon=True)
-    polling_thread.start()
 
     # اجرای Thread برای پینگ
     threading.Thread(target=keep_alive, daemon=True).start()
 
-    # نگه داشتن برنامه فعال
-    while True:
-        time.sleep(1)
+    # اجرای Polling تو Main Thread
+    asyncio.run(run_bot(app))
